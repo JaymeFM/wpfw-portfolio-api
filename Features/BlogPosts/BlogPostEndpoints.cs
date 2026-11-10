@@ -2,41 +2,32 @@ namespace PortfolioApi.Features.BlogPosts;
 
 public static class BlogPostEndpoints
 {
-    private static readonly List<BlogPost> BlogPosts =
-    [
-        new BlogPost
-        {
-            Id = 1,
-            Title = "Koekjes",
-            Content = "Ik heb vandaag 1 miljoen miljard koekjes gebakken en ze waren zo enorm lekker.",
-            PublishedAt = new DateTime(2026, 9, 18, 20, 0, 0)
-        },
-        new BlogPost
-        {
-            Id = 2,
-            Title = "Bakken",
-            Content = "Ik ben echt koekjes aan het bakken als een speer je zal het niet geloven hoeveel ik er aan het maken ben.",
-            PublishedAt = new DateTime(2026, 9, 18, 19, 0, 0)
-        },
-        new BlogPost
-        {
-            Id = 3,
-            Title = "Nieuw vestje",
-            Content = "Ik heb een nieuw vestje gekocht van Rick Owens, ik vind hemzelf echt gaaf.",
-            PublishedAt = new DateTime(2026, 9, 16, 13, 0, 0)
-        }
-    ];
-
     public static void MapBlogPostEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/blogposts").WithTags("BlogPosts");
 
-        group.MapGet("/", () => Results.Ok(BlogPosts));
+        group.MapGet("/", async (BlogPostService service) =>
+            Results.Ok(await service.GetAllAsync()));
 
-        group.MapGet("/{id}", (int id) =>
+        group.MapGet("/{id}", async (int id, BlogPostService service) =>
         {
-            var blogPost = BlogPosts.FirstOrDefault(b => b.Id == id);
+            var blogPost = await service.GetByIdAsync(id);
             return blogPost is null ? Results.NotFound() : Results.Ok(blogPost);
         });
+
+        group.MapPost("/", async (CreateBlogPostDto dto, BlogPostService service) =>
+        {
+            var blogPost = await service.CreateAsync(dto);
+            return Results.Created($"/api/blogposts/{blogPost.Id}", blogPost);
+        });
+
+        group.MapPut("/{id}", async (int id, UpdateBlogPostDto dto, BlogPostService service) =>
+        {
+            var blogPost = await service.UpdateAsync(id, dto);
+            return blogPost is null ? Results.NotFound() : Results.Ok(blogPost);
+        });
+
+        group.MapDelete("/{id}", async (int id, BlogPostService service) =>
+            await service.DeleteAsync(id) ? Results.NoContent() : Results.NotFound());
     }
 }
