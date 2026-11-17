@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PortfolioApi.Data;
+using PortfolioApi.Features.Auth;
 using PortfolioApi.Features.BlogPosts;
 using PortfolioApi.Features.Projects;
 
@@ -37,6 +38,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.MapAuthEndpoints();
 app.MapProjectEndpoints();
 app.MapBlogPostEndpoints();
 
