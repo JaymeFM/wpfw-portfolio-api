@@ -17,17 +17,28 @@ public static class BlogPostEndpoints
 
         group.MapPost("/", async (CreateBlogPostDto dto, BlogPostService service) =>
         {
+            if (string.IsNullOrWhiteSpace(dto.Title) || string.IsNullOrWhiteSpace(dto.Content))
+            {
+                return Results.BadRequest("Title en Content zijn verplicht.");
+            }
+
             var blogPost = await service.CreateAsync(dto);
             return Results.Created($"/api/blogposts/{blogPost.Id}", blogPost);
-        });
+        }).RequireAuthorization("EditorOfAdmin");
 
         group.MapPut("/{id}", async (int id, UpdateBlogPostDto dto, BlogPostService service) =>
         {
+            if (string.IsNullOrWhiteSpace(dto.Title) || string.IsNullOrWhiteSpace(dto.Content))
+            {
+                return Results.BadRequest("Title en Content zijn verplicht.");
+            }
+
             var blogPost = await service.UpdateAsync(id, dto);
             return blogPost is null ? Results.NotFound() : Results.Ok(blogPost);
-        });
+        }).RequireAuthorization("EditorOfAdmin");
 
         group.MapDelete("/{id}", async (int id, BlogPostService service) =>
-            await service.DeleteAsync(id) ? Results.NoContent() : Results.NotFound());
+            await service.DeleteAsync(id) ? Results.NoContent() : Results.NotFound())
+            .RequireAuthorization("EditorOfAdmin");
     }
 }

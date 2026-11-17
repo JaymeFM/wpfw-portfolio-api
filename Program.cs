@@ -27,6 +27,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("EditorOfAdmin", policy => policy.RequireRole("Editor", "Admin"));
+});
+
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<BlogPostService>();
 
@@ -37,6 +42,9 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapAuthEndpoints();
 app.MapProjectEndpoints();
