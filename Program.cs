@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using PortfolioApi.Data;
 using PortfolioApi.Features.BlogPosts;
 using PortfolioApi.Features.Projects;
@@ -7,6 +8,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<PortfolioDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("PortfolioDb")));
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<PortfolioDbContext>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = 401;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = 403;
+        return Task.CompletedTask;
+    };
+});
 
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<BlogPostService>();

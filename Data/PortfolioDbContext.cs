@@ -1,16 +1,26 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PortfolioApi.Features.BlogPosts;
 using PortfolioApi.Features.Projects;
 
 namespace PortfolioApi.Data;
 
-public class PortfolioDbContext(DbContextOptions<PortfolioDbContext> options) : DbContext(options)
+public class PortfolioDbContext(DbContextOptions<PortfolioDbContext> options) : IdentityDbContext(options)
 {
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<IdentityRole>().HasData(
+            new IdentityRole { Id = "1", Name = "Gast", NormalizedName = "GAST", ConcurrencyStamp = "1" },
+            new IdentityRole { Id = "2", Name = "Editor", NormalizedName = "EDITOR", ConcurrencyStamp = "2" },
+            new IdentityRole { Id = "3", Name = "Admin", NormalizedName = "ADMIN", ConcurrencyStamp = "3" }
+        );
+
         modelBuilder.Entity<Project>().HasData(
             new Project
             {
